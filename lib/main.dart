@@ -1,83 +1,87 @@
+import 'package:actividad_2/Model/UserResponse.dart';
 import 'package:flutter/material.dart';
-import 'iniciarsecion.dart';
-import 'registrarse.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() => runApp(MyHome());
+import './Widgets/Form.dart';
+import './Widgets/ButtonLogin.dart';
+import './Widgets/ButtonRegister.dart';
+import 'Views/DashBoard.dart';
 
-class MyHome extends StatelessWidget{
- 
- @override
- Widget build(BuildContext context){
-   return MaterialApp(
-     title: 'My nav',
-     theme: ThemeData(
+void main() => runApp(
+      ChangeNotifierProvider(
+          create: (context) => UserResponse.empty(), child: MyHome()),
+    );
+
+class MyHome extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'My nav',
+      theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: Home(),
-
-
-   );
-
- }
-
+    );
+  }
 }
 
-class Home extends StatelessWidget{
-  final controler1 = TextEditingController();
-   @override
-   Widget build(BuildContext context){
-     return Scaffold(
-       appBar: AppBar(
-         title: Text('My app'),
-       ),
-       body: ListView
-       (children: <Widget>[
-            
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+class Home extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var result = isUserLogged();
+    if (result == true) {
+       Navigator.push(
+          context,
+        MaterialPageRoute(builder: (context) => DashBoard()),
+      );
+    } else {
+      return Container(
+        decoration: new BoxDecoration(
+          gradient: new LinearGradient(
+            colors: [Colors.blue, Colors.deepPurpleAccent],
+            begin: const FractionalOffset(0.5, 0.1),
+            end: const FractionalOffset(0.5, 0.9),
+          ),
+        ),
+        child: Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(32.0)),
+          margin: EdgeInsets.only(left: 20, right: 20, top: 200, bottom: 200),
+          elevation: 10,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-               TextField(
-          obscureText: false,
-        	decoration: InputDecoration(
-          	border: OutlineInputBorder(),
-          	hintText: "Email",
-        	),
-      	),
-        
-         TextField(
-          obscureText: true,
-        	decoration: InputDecoration(
-          	border: OutlineInputBorder(),
-          	hintText: "Pasword",
-        	),
-      	),
-             _row(context, "Iniciar",
-              Iniciar()), 
-              _row(context, "Registrate",
-              Registrate()),
-             // Navegar()
+              Container(
+                margin: EdgeInsets.all(50),
+                child: LoginAndSignupForm(
+                    isSignUp: false,
+                    fields: ["email", "password"],
+                    color: Colors.deepPurple),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  ButtonLogin(),
+                  ButtonRegister(),
+                ],
+              )
             ],
           ),
-        ])
-
-     );
-
-   }
-}
-
-Widget _row(BuildContext context, String text, Widget destination) {
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          RaisedButton(
-              onPressed: () => {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => destination),
-                    )
-                  },
-              child: Text(text)),
-          SizedBox(height: 20.0)
-        ]);
+        ),
+      );
+    }
   }
 
+  isUserLogged() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey('token');
+  }
+
+  changeOfView(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => DashBoard()),
+    );
+  }
+}
